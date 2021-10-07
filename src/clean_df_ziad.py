@@ -12,8 +12,8 @@ import seaborn as sns
 from pandas_profiling import ProfileReport
 
 
-#FILENAME = "../data/RAW/valeursfoncieres-2020.txt"
-#df = pd.read_csv(FILENAME,'|')
+FILENAME = "../data/RAW/valeursfoncieres-2020.txt"
+df = pd.read_csv(FILENAME,'|')
 
 def Clean_df(df : pd.DataFrame) -> pd.DataFrame:
     percent_data = df.notnull().sum() * 100 / len(df)
@@ -37,21 +37,24 @@ def Clean_df(df : pd.DataFrame) -> pd.DataFrame:
     df_fill["Surface reelle bati"] = df_fill["Surface reelle bati"].fillna(0)
     df_fill["Nombre pieces principales"] = df_fill["Nombre pieces principales"].fillna(0)
     df_fill = df_fill.drop(['Type de voie', 'No voie'], axis=1)
+    df_fill  = df_fill.dropna(subset = ["Valeur fonciere"] ,axis = 0)
     
-    percent_data_fill = df_fill.notnull().sum() * 100 / len(df_s)
+    percent_data_fill = df_fill.notnull().sum() * 100 / len(df_fill)
     plt.figure()
     plt.barh(percent_data_fill.index,percent_data_fill)
     plt.xlabel("Percentage of data in columns")
+    
     return df_fill
 
-def verif_local(df : pd.DataFrame) -> bool:
+def Verif_local(df : pd.DataFrame) -> bool:
     # check if type local and code local are correct in my database
     df.duplicated(subset=['Type local','Code type local'], keep="first").sum()
     #df[~df.duplicated(subset=['Type local','Code type local'], keep="first")]
     if len(df) == len(df['Type local'].unique()) + df.duplicated(subset=['Type local','Code type local'], keep="first").sum():
         return True
-    else: return False
+    return False
 
+df_fill = Clean_df(df)
 
     #profile = ProfileReport(df_s, title="Pandas Profiling Report",html={'style':{'full_width':True}})
     #profile
