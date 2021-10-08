@@ -14,6 +14,7 @@ from pandas_profiling import ProfileReport
 
 FILENAME = "../data/RAW/valeursfoncieres-2020.txt"
 df = pd.read_csv(FILENAME,'|')
+df.columns = df.columns.str.replace(" ", "_")
 
 def Clean_df(df : pd.DataFrame) -> pd.DataFrame:
     percent_data = df.notnull().sum() * 100 / len(df)
@@ -32,25 +33,27 @@ def Clean_df(df : pd.DataFrame) -> pd.DataFrame:
     plt.xlabel("Percentage of data in columns")
     
     df_fill = df_s.copy()
-    df_fill["Code type local"] = df_fill["Code type local"].fillna(0)
-    df_fill["Type local"] = df_fill["Type local"].fillna("nothing")
-    df_fill["Surface reelle bati"] = df_fill["Surface reelle bati"].fillna(0)
-    df_fill["Nombre pieces principales"] = df_fill["Nombre pieces principales"].fillna(0)
-    df_fill = df_fill.drop(['Type de voie', 'No voie'], axis=1)
-    df_fill  = df_fill.dropna(subset = ["Valeur fonciere"] ,axis = 0)
+    df_fill["Code_type_local"] = df_fill["Code_type_local"].fillna(0)
+    df_fill["Type_local"] = df_fill["Type_local"].fillna("nothing")
+    df_fill["Surface_reelle_bati"] = df_fill["Surface_reelle_bati"].fillna(0)
+    df_fill["Nombre_pieces_principales"] = df_fill["Nombre_pieces_principales"].fillna(0)
+    df_fill = df_fill.drop(['Type_de_voie', 'No_voie','Voie','Code_voie'], axis=1)
+    df_fill  = df_fill.dropna(subset = ["Valeur_fonciere"] ,axis = 0)
     
     percent_data_fill = df_fill.notnull().sum() * 100 / len(df_fill)
     plt.figure()
     plt.barh(percent_data_fill.index,percent_data_fill)
     plt.xlabel("Percentage of data in columns")
     
+    df_fill['Code_postal'] = df_fill.groupby(['Commune', 'Code_commune', 'Code_departement']).Code_postal.transform(lambda x: x.fillna(x.median()))
+    df_fill.Code_postal = df_fill.Code_postal.round(2)    
     return df_fill
 
 def Verif_local(df : pd.DataFrame) -> bool:
     # check if type local and code local are correct in my database
-    df.duplicated(subset=['Type local','Code type local'], keep="first").sum()
+    df.duplicated(subset=['Type_local','Code_type_local'], keep="first").sum()
     #df[~df.duplicated(subset=['Type local','Code type local'], keep="first")]
-    if len(df) == len(df['Type local'].unique()) + df.duplicated(subset=['Type local','Code type local'], keep="first").sum():
+    if len(df) == len(df['Type_local'].unique()) + df.duplicated(subset=['Type_local','Code_type_local'], keep="first").sum():
         return True
     return False
 
