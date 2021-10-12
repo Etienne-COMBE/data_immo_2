@@ -30,6 +30,7 @@ def data_import_integrity(nrows: int = None) -> pd.DataFrame:
                         "Surface_Carrez_du_4eme_lot",
                         "Surface_Carrez_du_5eme_lot"]
     df[str_float_features] = df[str_float_features].apply(str_to_float)
+    df["Code_postal"] = code_postal_str(df["Code_postal"])
 
     return df
 
@@ -52,7 +53,7 @@ def to_int(df: pd.DataFrame) -> pd.DataFrame:
                     "Nombre_pieces_principales",
                     "Surface_reelle_bati",
                     "Surface_terrain"]
-    df[int_features].apply(int)
+    df[int_features].astype(int)
     return df
 
 def data_export(df, nrows: int= None):

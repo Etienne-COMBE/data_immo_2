@@ -9,7 +9,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from pandas_profiling import ProfileReport
 
 
 FILENAME = "../data/RAW/valeursfoncieres-2020.txt"
@@ -32,21 +31,15 @@ def Clean_df(df : pd.DataFrame) -> pd.DataFrame:
     plt.barh(percent_data_s.index,percent_data_s)
     plt.xlabel("Percentage of data in columns")
     
-    df_fill = df_s.copy()
-    df_fill["Code_type_local"] = df_fill["Code_type_local"].fillna(0)
-    df_fill["Type_local"] = df_fill["Type_local"].fillna("nothing")
-    df_fill["Surface_reelle_bati"] = df_fill["Surface_reelle_bati"].fillna(0)
-    df_fill["Nombre_pieces_principales"] = df_fill["Nombre_pieces_principales"].fillna(0)
-    df_fill = df_fill.drop(['Type_de_voie', 'No_voie','Voie','Code_voie'], axis=1)
-    df_fill  = df_fill.dropna(subset = ["Valeur_fonciere"] ,axis = 0)
+    df_fill = clean_na(df_s)
     
     percent_data_fill = df_fill.notnull().sum() * 100 / len(df_fill)
     plt.figure()
     plt.barh(percent_data_fill.index,percent_data_fill)
     plt.xlabel("Percentage of data in columns")
     
-    df_fill['Code_postal'] = df_fill.groupby(['Commune', 'Code_commune', 'Code_departement']).Code_postal.transform(lambda x: x.fillna(x.median()))
-    df_fill.Code_postal = df_fill.Code_postal.round(2)    
+    df_fill = fill_code_postal(df_fill)
+
     return df_fill
 
 def Verif_local(df : pd.DataFrame) -> bool:
@@ -57,8 +50,23 @@ def Verif_local(df : pd.DataFrame) -> bool:
         return True
     return False
 
-df_fill = Clean_df(df)
+def clean_na(df_s : pd.DataFrame) -> pd.DataFrame:
+    df_fill = df_s.copy()
+    df_fill["Code_type_local"] = df_fill["Code_type_local"].fillna(0)
+    df_fill["Type_local"] = df_fill["Type_local"].fillna("nothing")
+    df_fill["Surface_reelle_bati"] = df_fill["Surface_reelle_bati"].fillna(0)
+    df_fill["Nombre_pieces_principales"] = df_fill["Nombre_pieces_principales"].fillna(0)
+    df_fill["Surface_terrain"] = df_fill["Surface_terrain"].fillna(0)
+    df_fill = df_fill.drop(['Type_de_voie', 'No_voie','Voie','Code_voie'], axis=1)
+    df_fill  = df_fill.dropna(subset = ["Valeur_fonciere"] ,axis = 0)
+    return df_fill
 
+def fill_code_postal(df_fill : pd.DataFrame) -> pd.DataFrame:
+    df_fill['Code_postal'] = df_fill.groupby(['Commune', 'Code_commune', 'Code_departement']).Code_postal.transform(lambda x: x.fillna(x.median()))
+    return df_fill
+
+# df_fill = Clean_df(df)
+    
     #profile = ProfileReport(df_s, title="Pandas Profiling Report",html={'style':{'full_width':True}})
     #profile
     #profile_dd = ProfileReport(df_s1, title="Pandas Profiling Report",html={'style':{'full_width':True}})
