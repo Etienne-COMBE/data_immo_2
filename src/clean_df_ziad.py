@@ -50,7 +50,9 @@ def Verif_local(df : pd.DataFrame) -> bool:
         return True
     return False
 
-def clean_na(df_s : pd.DataFrame) -> pd.DataFrame:
+def clean_na(df : pd.DataFrame) -> pd.DataFrame:
+    percent_data = df.notnull().sum() * 100 / len(df)
+    df_s = df.drop(percent_data.index[percent_data < 35], axis=1)
     df_fill = df_s.copy()
     df_fill["Code_type_local"] = df_fill["Code_type_local"].fillna(0)
     df_fill["Type_local"] = df_fill["Type_local"].fillna("nothing")

@@ -23,32 +23,33 @@ def data_import_integrity(nrows: int = None) -> pd.DataFrame:
     df.columns = df.columns.str.replace(" ", "_")
 
     df["No_disposition"] = df["No_disposition"].str.strip("0")
+    
+    df = str_to_float(df)
+    df = code_postal_str(df)
+
+    return df
+
+def str_to_float(df):
     str_float_features = ["Valeur_fonciere",
                         "Surface_Carrez_du_1er_lot",
                         "Surface_Carrez_du_2eme_lot",
                         "Surface_Carrez_du_3eme_lot",
                         "Surface_Carrez_du_4eme_lot",
                         "Surface_Carrez_du_5eme_lot"]
-    df[str_float_features] = df[str_float_features].apply(str_to_float)
-    df["Code_postal"] = code_postal_str(df["Code_postal"])
-
+    df[str_float_features] = df[str_float_features].replace(",", ".").astype(float)
     return df
 
-def str_to_float(series: pd.Series):
-    if len(series[series.notna()]) != 0:
-        series = series.str.replace(",", ".").astype(float)
-        return series
+def code_postal_str(df):
+    str_code = df.Code_postal.astype(str).str[:-2].copy()
+    df["Code_postal"] = pd.concat(['0' + str_code[str_code.str.len() == 4], str_code[str_code.str.len() == 5]])
+    return df
 
 #-----------------------#
 # To use in cleaning.py #
 #-----------------------#
 
-def code_postal_str(series: pd.Series) -> pd.Series:
-    str_code = series.astype(str).str[:-2].copy()
-    series = pd.concat(['0' + str_code[str_code.str.len() == 4], str_code[str_code.str.len() == 5]])
-    return series
 
-def to_int(df: pd.DataFrame) -> pd.DataFrame:
+def to_int(df):
     int_features = ["Nombre_de_lots",
                     "Nombre_pieces_principales",
                     "Surface_reelle_bati",
@@ -58,4 +59,4 @@ def to_int(df: pd.DataFrame) -> pd.DataFrame:
 
 def data_export(df, nrows: int= None):
     if nrows == None:
-        df.to_csv("../data/CURATED/valeursfoncieres-2020.csv")
+        df.to_csv("../data/CURATED/valeursfoncieres-2020.csv", index = False)
