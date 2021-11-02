@@ -57,14 +57,13 @@ def clean_na(df : pd.DataFrame) -> pd.DataFrame:
     df_fill["Code_type_local"] = df_fill["Code_type_local"].fillna(0)
     df_fill["Type_local"] = df_fill["Type_local"].fillna("nothing")
     df_fill["Surface_reelle_bati"] = df_fill["Surface_reelle_bati"].fillna(0)
-    df_fill["Nombre_pieces_principales"] = df_fill["Nombre_pieces_principales"].fillna(0)
     df_fill["Surface_terrain"] = df_fill["Surface_terrain"].fillna(0)
-    df_fill = df_fill.drop(['Type_de_voie', 'No_voie','Voie','Code_voie'], axis=1)
-    df_fill  = df_fill.dropna(subset = ["Valeur_fonciere"] ,axis = 0)
+    df_fill["Nombre_pieces_principales"] = df_fill["Nombre_pieces_principales"].fillna(0)
+    df_fill = df_fill.drop(['Type_de_voie', 'No_voie','Voie','Code_voie', "Nature_culture"], axis=1)
     return df_fill
 
 def fill_code_postal(df_fill : pd.DataFrame) -> pd.DataFrame:
-    df_fill['Code_postal'] = df_fill.groupby(['Commune', 'Code_commune', 'Code_departement']).Code_postal.transform(lambda x: x.fillna(x.median()))
+    df_fill['Code_postal'] = df_fill.groupby('Code_id_commune').Code_postal.transform(lambda x: x.fillna(x.mode()[0]))
     return df_fill
 
 # df_fill = Clean_df(df)
